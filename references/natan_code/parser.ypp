@@ -1,0 +1,153 @@
+%{
+	#include "output.hpp"
+	#include <iostream>
+	#include <stdlib.h>
+
+	using namespace std;
+	using namespace output;
+	
+	extern int yylex();
+	extern int yylineno;
+	int yyerror(const char * message);
+%}
+
+%nonassoc VOID
+%nonassoc INT
+%nonassoc BYTE
+%nonassoc B
+%nonassoc BOOL
+
+%nonassoc SET
+
+%nonassoc TRUE
+%nonassoc FALSE
+%nonassoc RETURN
+
+%nonassoc IF
+
+%nonassoc WHILE
+%nonassoc BREAK
+%nonassoc CONTINUE
+
+%nonassoc SC
+%nonassoc COMMA
+%nonassoc LBRACE
+%nonassoc RBRACE
+%nonassoc LBRACKET
+%nonassoc RBRACKET
+
+%nonassoc ID
+%nonassoc NUM
+%nonassoc STRING
+
+
+%right ASSIGN
+
+%left OR
+%left AND
+%right NOT
+
+%nonassoc RELOP_nonass
+%left RELOP_left
+
+%left BINOP_add
+%left BINOP_mul
+
+
+%nonassoc DOTS
+
+
+%nonassoc RPAREN
+%nonassoc LPAREN
+%nonassoc ELSE
+
+
+%%
+
+Program		:	Funcs													      	{printProductionRule(1);}
+
+Funcs		:	FuncDecl Funcs												{printProductionRule(3);}
+			    |	/* epsilon */														{printProductionRule(2);}
+                
+
+FuncDecl	:	RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE					{printProductionRule(4);}
+
+
+RetType		:	Type																	{printProductionRule(5);}
+			      |	VOID																{printProductionRule(6);}
+                    
+
+Formals		:	FormalsList													{printProductionRule(8);}
+		      	|	/* epsilon */													{printProductionRule(7);}
+
+FormalsList	:	FormalDecl													{printProductionRule(9);}
+			        |	FormalDecl COMMA FormalsList			{printProductionRule(10);}
+          
+FormalDecl	:	Type ID															{printProductionRule(11);}
+
+Statements	:	Statement														{printProductionRule(12);}
+			      |	Statements Statement								{printProductionRule(13);}
+                    
+                    
+
+Statement	:	LBRACE Statements RBRACE							{printProductionRule(14);}
+		 	|	Type ID SC																{printProductionRule(15);}
+			|	Type ID ASSIGN Exp SC											{printProductionRule(16);}
+			|	ID ASSIGN Exp SC													{printProductionRule(17);}
+			|	Call SC																		{printProductionRule(18);}
+			|	RETURN SC																	{printProductionRule(19);}
+			|	RETURN Exp SC															{printProductionRule(20);}
+			|	IF LPAREN Exp RPAREN Statement						{printProductionRule(21);}
+			|	IF LPAREN Exp RPAREN Statement ELSE Statement								{printProductionRule(22);}
+			|	WHILE LPAREN Exp RPAREN Statement					{printProductionRule(23);}
+			|	BREAK SC																	{printProductionRule(24);}
+			|	CONTINUE SC																{printProductionRule(25);}
+
+
+Call		:	ID LPAREN ExpList RPAREN								{printProductionRule(26);}
+			|	ID LPAREN RPAREN													{printProductionRule(27);}
+
+
+
+
+ExpList		:	Exp																	  {printProductionRule(28);}
+			|	Exp COMMA ExpList													{printProductionRule(29);}
+
+
+
+
+Type		:	INT																			{printProductionRule(30);}
+			|	BYTE																	  	{printProductionRule(31);}
+			|	BOOL																		  {printProductionRule(32);}
+      | SET LBRACKET NUM DOTS NUM RBRACKET        {printProductionRule(33);}
+      
+      
+      
+	
+Exp			:	LPAREN Exp RPAREN												{printProductionRule(34);}
+			|	Exp BINOP_mul Exp											  	{printProductionRule(35);}
+			|	Exp BINOP_add Exp											  	{printProductionRule(35);}
+			|	ID																		  	{printProductionRule(36);}
+			|	Call																	  	{printProductionRule(37);}
+			|	NUM																		  	{printProductionRule(38);}
+			|	NUM B																	  	{printProductionRule(39);}
+			|	STRING																		{printProductionRule(40);}
+			|	TRUE																	  	{printProductionRule(41);}
+			|	FALSE																		  {printProductionRule(42);}
+			|	NOT Exp																		{printProductionRule(43);}
+			|	Exp AND Exp																{printProductionRule(44);}
+			|	Exp OR Exp																{printProductionRule(45);}
+			|	Exp RELOP_nonass Exp											{printProductionRule(46);}
+			|	Exp RELOP_left Exp									  		{printProductionRule(46);}
+			| LPAREN Type RPAREN Exp										{printProductionRule(47);}
+
+%%
+
+int main() {
+	return yyparse();
+}
+
+int yyerror(const char * message) {
+	errorSyn(yylineno);
+	exit(1);
+}

@@ -1,8 +1,9 @@
 %{
 
 /* Declarations section */
-#include "tokens.hpp"
-
+#include "output.hpp"
+#include "parser.tab.hpp"
+using namespace output;
 %}
 
 %option yylineno
@@ -42,8 +43,10 @@ default                     return DEFAULT;
 \{                          return LBRACE;
 \}                          return RBRACE;
 =                           return ASSIGN;
-==|!=|<|>|<=|>=             return RELOP;
-\+|\-|\*|\/                 return BINOP;
+==|!=                       return RELOP_EQ;
+\<|\>|\<=|\>=                   return RELOP_REL;
+\+|\-                       return BINOP_ADD;
+\*|\/                       return BINOP_MUL;
 {letter}({letter}|{digit})* return ID;
 0|({nonzerodigit}{digit}*)  return NUM;
 \"([^\n\r\"\\]|\\[rnt\"\\])+\"	return STRING;
@@ -52,9 +55,9 @@ default                     return DEFAULT;
 
 
 [\t\r\n ]                ;
-//[^\r\n]*(\r|\n|\r\n)?  ;
+\/\/[^\r\n]*(\r|\n|\r\n)?  ;
 
 
-.                           return LEXERROR;
+.                           {errorLex(yylineno); exit(1);}
 
 %%
